@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 
 
+## [0.8.2] - 2026-11-24
+- [change] Make the fxy core zero-runtime-dependency; move mpmath and eday to the calc/cas/lab extras.
+- [change] Lower the supported Python floor to 3.8 and use a Python-3.8-compatible setuptools build floor.
+- [change] Make legacy calculator/environment commands fail with actionable extra-install guidance when their stacks are absent.
+- [docs] Emphasize portability and lean resolver semantics for Termux and other small Python environments.
+
 ## [0.8.1] - 2026-11-24
 - [docs] Reframe fxy around reusable computational vocabularies and profiles.
 - [docs] Make GitHub-hosted profiles, dependency approval, inspection, and reproducibility the primary workflow.

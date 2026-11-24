@@ -4,6 +4,25 @@ import subprocess
 import sys
 
 
+_LEGACY_EXTRA_MODULES = {
+    "calc": ("mpmath", "eday"),
+    "cas": ("sympy", "mpmath", "eday"),
+    "lab": ("mpmath", "eday", "sympy", "numpy", "pandas", "xarray", "scipy", "sklearn", "statsmodels"),
+    "plot": ("matplotlib", "seaborn"),
+}
+
+
+def _require_legacy_extra(name):
+    modules = _LEGACY_EXTRA_MODULES[name]
+    missing = [module for module in modules if importlib.util.find_spec(module) is None]
+    if missing:
+        raise RuntimeError(
+            f"Legacy {name} environment is incomplete (missing: {', '.join(missing)}); "
+            f"install fxy[{name}] or use a dependency-declared profile."
+        )
+
+
+
 def interact(modules=(), mode=False):
     commands = "; ".join(f"from fxy.{module} import *" for module in modules)
 
@@ -35,6 +54,9 @@ def interact(modules=(), mode=False):
 
 
 def run_qtconsole(name):
+    _require_legacy_extra(name)
+    _require_legacy_extra("plot")
+
     required = ("IPython", "ipykernel", "jupyter_client", "qtconsole")
     missing = [module for module in required if importlib.util.find_spec(module) is None]
     if missing:
@@ -106,6 +128,13 @@ def main():
         module = 'cas'
     if not(args.lab):
         module = 'lab'
+
+    try:
+        _require_legacy_extra(module)
+        if plot:
+            _require_legacy_extra("plot")
+    except RuntimeError as exc:
+        parser.error(str(exc))
 
     interact([module], mode)
 

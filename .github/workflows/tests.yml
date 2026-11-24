@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.12", "3.14"]
+        python-version: ["3.8", "3.9", "3.12", "3.14"]
 
     steps:
       - uses: actions/checkout@v4
@@ -54,3 +54,51 @@ jobs:
           x = symbols("x")
           assert solve(Eq(x**2, 4), x) == [-2, 2]
           PY
+
+
+  core-smoke:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install core only
+        run: python -m pip install .
+
+      - name: Verify zero runtime dependencies
+        run: |
+          python - <<'PYCORE'
+          from importlib.metadata import requires
+          import fxy
+
+          runtime = [
+              req for req in (requires("fxy") or ())
+              if "extra ==" not in req
+          ]
+          assert runtime == [], runtime
+          assert fxy.available() == ("calc/v1", "cas/v1", "lab/v1")
+          PYCORE
+
+  calc-smoke:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install calculator extra
+        run: python -m pip install ".[calc]"
+
+      - name: Calculator smoke test
+        run: |
+          result=$(python -m fxy "pi**2")
+          python - "$result" <<'PYCALC'
+          import math
+          import sys
+          assert abs(float(sys.argv[1]) - math.pi**2) < 1e-12
+          PYCALC
