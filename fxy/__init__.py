@@ -115,3 +115,15 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# Versioned computational namespace profiles.
+from .profiles import (
+    Profile,
+    available,
+    describe,
+    diff,
+    names,
+    namespace,
+    resolve,
+    use,
+)
