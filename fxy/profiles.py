@@ -17,6 +17,8 @@ import inspect
 from types import ModuleType
 from typing import Any, Dict, MutableMapping, Optional, Tuple, Union
 
+from .dependencies import install_requirements
+
 
 @dataclass(frozen=True)
 class Profile:
@@ -26,6 +28,7 @@ class Profile:
     version: int
     module: str
     description: str
+    requirements: Tuple[str, ...] = ()
 
     @property
     def id(self) -> str:
@@ -36,14 +39,27 @@ _PROFILES: Dict[str, Profile] = {
     "calc/v1": Profile(
         "calc", 1, "fxy.calc",
         "Legacy CALC vocabulary (mpmath-oriented calculator).",
+        ("mpmath>=1.3", "eday"),
     ),
     "cas/v1": Profile(
         "cas", 1, "fxy.cas",
         "Legacy CAS vocabulary (SymPy + mpmath).",
+        ("sympy>=1.13", "mpmath>=1.3", "eday"),
     ),
     "lab/v1": Profile(
         "lab", 1, "fxy.lab",
         "Legacy LAB vocabulary (numeric/data/scientific stack).",
+        (
+            "sympy>=1.13",
+            "mpmath>=1.3",
+            "eday",
+            "numpy",
+            "pandas",
+            "xarray",
+            "scipy",
+            "scikit-learn",
+            "statsmodels",
+        ),
     ),
 }
 
@@ -75,6 +91,21 @@ def resolve(name: Union[str, Profile]) -> Profile:
             f"unknown fxy profile {name!r}; available: {options}"
         ) from exc
 
+
+
+def install(
+    profile: Union[str, Profile],
+    *,
+    approve: bool = False,
+) -> Tuple[str, ...]:
+    """Install the dependencies declared by a built-in profile."""
+
+    spec = resolve(profile)
+    return install_requirements(
+        spec.requirements,
+        approve=approve,
+        source=spec.id,
+    )
 
 def _module(profile: Union[str, Profile]) -> ModuleType:
     return import_module(resolve(profile).module)
@@ -154,5 +185,6 @@ def describe(profile: Union[str, Profile]) -> Dict[str, Any]:
         "version": spec.version,
         "module": spec.module,
         "description": spec.description,
+        "requirements": spec.requirements,
         "names": names(spec),
     }

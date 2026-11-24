@@ -68,6 +68,10 @@ class RemoteProfileTests(unittest.TestCase):
         self.assertEqual(values["root"](9), 3)
         self.assertAlmostEqual(values["pi"], 3.141592653589793)
 
+    def test_remote_and_builtin_share_install_approval_type(self):
+        from fxy.dependencies import InstallApprovalRequired
+        self.assertIs(remote.InstallApprovalRequired, InstallApprovalRequired)
+
     def test_install_requires_approval(self):
         with tempfile.TemporaryDirectory() as td:
             source = remote.parse_source("mindey/cas")

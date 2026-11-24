@@ -23,26 +23,34 @@ CPython, IPython, Jupyter, QtConsole, scripts, or another Python host.
 Quick start
 -----------
 
-Install the small core::
+Install the zero-runtime-dependency core::
 
     pip install fxy
 
-Then use a built-in profile::
+The core is pure Python and uses only the standard library. It can inspect,
+cache, and resolve profiles without installing a numerical stack::
 
     import fxy
 
     fxy.available()
     # ('calc/v1', 'cas/v1', 'lab/v1')
 
+    fxy.describe("mindey/cas")
+
+Install any vocabulary through the same profile API::
+
+    fxy.install("cas", approve=True)
     fxy.use("cas/v1")
+
+    fxy.install("mindey/cas", approve=True)
+    fxy.use("mindey/cas")
 
 Unversioned built-in names are aliases for their current profile::
 
     fxy.use("cas")          # currently cas/v1
 
-A profile can also be published independently on GitHub::
+A profile can also be pinned to a Git ref::
 
-    fxy.use("mindey/cas")
     fxy.use("mindey/cas@main")
     fxy.use("mindey/cas@44e0c10f778d8564fa4ff884b5a22ed651f368a5")
 
@@ -130,24 +138,29 @@ exact names realized by a ``v1`` profile can still depend on what is installed.
 Future profile versions can be curated and dependency-declared without silently
 changing notebooks that explicitly requested ``v1``.
 
-Installing built-in capabilities
---------------------------------
+Installing profile requirements
+-------------------------------
 
-The default installation stays small::
+The default installation has no runtime dependencies::
 
     pip install fxy
 
-Optional built-in stacks are available as extras::
+This is intentionally suitable for small Python environments, including
+terminal/mobile environments such as Termux: the resolver itself does not pull
+in NumPy, SymPy, mpmath, plotting libraries, or Jupyter.
 
-    pip install 'fxy[cas]'
-    pip install 'fxy[lab]'
-    pip install 'fxy[plot]'
-    pip install 'fxy[ipython]'
-    pip install 'fxy[qt]'
-    pip install 'fxy[all]'
+A profile owns the declaration of the packages needed to realize its vocabulary.
+Built-in and GitHub-hosted profiles use the same operation and approval boundary::
+
+    fxy.install("calc", approve=True)
+    fxy.install("cas/v1", approve=True)
+    fxy.install("mindey/cas", approve=True)
+
+There is deliberately no parallel ``fxy[...]`` installer namespace.
+Profile requirements have one source of truth.
 
 A GitHub-hosted profile does not need its own PyPI package merely to define a
-vocabulary.  Its repository can declare the packages it needs.
+vocabulary. Its repository can declare the packages it needs.
 
 Publishing a profile
 --------------------
@@ -176,6 +189,17 @@ environment manager, and user interface.
 
 That separation is the main design direction of ``fxy`` 0.8+.
 
+Portability
+-----------
+
+The core package targets Python 3.8+ and has zero runtime dependencies. The
+wheel is platform-independent (``py3-none-any``). Platform-specific or compiled
+requirements belong to the profile or optional extra that actually needs them,
+not to the resolver itself.
+
+This is deliberate: ``fxy`` should remain cheap to install even when the
+scientific environment it can describe is large.
+
 Legacy compatibility
 --------------------
 
@@ -200,13 +224,22 @@ kept as compatibility surfaces and may receive maintenance fixes.
 Command-line calculator
 -----------------------
 
-The small calculator command remains useful independently of the profile API::
+The historical calculator command is optional. Install its profile
+requirements through the same API::
+
+    python -c "import fxy; fxy.install('calc', approve=True)"
+
+Then::
 
     fxy
     python -m fxy "pi**2"
 
-Use ``fxy -i`` if the IPython extra is installed and you want the interactive
-IPython frontend.
+Without those profile requirements, the command exits with an actionable
+message instead of silently opening a partial calculator.
+
+The deprecated IPython/QtConsole launchers are execution frontends rather than
+computational vocabularies; their third-party frontend packages are intentionally
+not represented as ``fxy`` profile dependencies.
 
 Links
 -----
