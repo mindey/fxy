@@ -49,6 +49,11 @@ class ProfileTests(unittest.TestCase):
         self.assertIsInstance(fxy.resolve("cas"), Profile)
         self.assertEqual(tuple(info["names"]), fxy.names("cas"))
 
+    def test_root_use_preserves_interactive_caller_namespace(self):
+        target = {}
+        exec("import fxy\nfxy.use('calc')", target)
+        self.assertTrue(set(fxy.names("calc")).issubset(target))
+
 
 if __name__ == "__main__":
     unittest.main()

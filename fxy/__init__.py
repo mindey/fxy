@@ -120,10 +120,65 @@ if __name__ == '__main__':
 from .profiles import (
     Profile,
     available,
-    describe,
+    describe as _local_describe,
     diff,
     names,
-    namespace,
+    namespace as _local_namespace,
     resolve,
-    use,
+    use as _local_use,
 )
+from . import remote
+
+
+def _is_remote_profile(profile):
+    # Consider GitHub sources only after local profile resolution.
+    if not isinstance(profile, str):
+        return False
+    try:
+        resolve(profile)
+        return False
+    except KeyError:
+        return remote.is_source(profile)
+
+
+def namespace(profile, **kwargs):
+    if _is_remote_profile(profile):
+        return remote.namespace(profile, **kwargs)
+    if kwargs:
+        raise TypeError("local profiles do not accept remote-profile options")
+    return _local_namespace(profile)
+
+
+def use(profile, target=None, **kwargs):
+    # Resolve the caller here so both local and remote dispatch preserve an
+    # interactive user's namespace rather than injecting into this wrapper.
+    if target is None:
+        import inspect
+        frame = inspect.currentframe()
+        try:
+            caller = frame.f_back if frame is not None else None
+            if caller is None:
+                raise RuntimeError("cannot determine caller namespace")
+            target = caller.f_globals
+        finally:
+            del frame
+
+    if _is_remote_profile(profile):
+        return remote.use(profile, target, **kwargs)
+    if kwargs:
+        raise TypeError("local profiles do not accept remote-profile options")
+    return _local_use(profile, target)
+
+
+def describe(profile, **kwargs):
+    if _is_remote_profile(profile):
+        return remote.describe(profile, **kwargs)
+    if kwargs:
+        raise TypeError("local profiles do not accept remote-profile options")
+    return _local_describe(profile)
+
+
+def install(profile, **kwargs):
+    if not _is_remote_profile(profile):
+        raise ValueError("dependency installation applies to remote profiles")
+    return remote.install(profile, **kwargs)

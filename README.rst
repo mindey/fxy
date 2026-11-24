@@ -161,3 +161,43 @@ realized by a v1 profile still depend on the current Python environment. The v1
 identifier therefore stabilizes the selection semantics and makes the realized
 namespace inspectable; a future cas/v2 or lab/v2 can become a curated, explicitly
 dependency-declared contract without silently changing old notebooks.
+
+GitHub-hosted profiles
+----------------------
+
+A profile can also live in a public GitHub repository.  The source syntax follows
+the familiar ``owner/repo`` convention, with an optional branch, tag or commit::
+
+    fxy.use('mindey/cas')
+    fxy.use('mindey/cas@main')
+    fxy.use('mindey/cas@8f1810c')
+
+The repository contains ``fxy.py`` at its root.  The file is declarative: fxy
+parses it and permits imports plus literal profile metadata, but does not execute
+arbitrary Python code::
+
+    __fxy_profile__ = 1
+    __requires__ = ['sympy>=1.13', 'mpmath>=1.3']
+
+    import sympy as sp
+    from sympy import symbols, Eq, solve, diff, integrate
+    from mpmath import mp
+
+Remote profiles are cached under the user's cache directory.  Unpinned
+``owner/repo`` sources use GitHub's ``HEAD`` ref; pin a tag or commit when
+reproducibility matters.  Cached sources are reused by default; pass
+``refresh=True`` to ``use()``, ``namespace()`` or ``describe()`` to fetch the
+selected ref again.
+
+Dependency installation is never implicit.  A profile may declare requirements,
+but installing them requires an explicit approval::
+
+    fxy.install('mindey/cas', approve=True)
+
+For interactive convenience, ``fxy.use(..., install_missing=True)`` is the
+explicit auto-approval form.  Without it, a missing import raises an error that
+shows the profile's declared requirements.
+
+This GitHub source form is intentionally small enough to support a future
+registry: a registry entry only needs to map a short name to an ``owner/repo``
+(or pinned ``owner/repo@ref``) source.
