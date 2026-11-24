@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.9.0] - candidate
+## [0.9.0] - 2026-11-24
 - [change] Reduce fxy to a single zero-runtime-dependency profile loader with four operations: describe(), install(), namespace(), and use().
 - [change] Make GitHub owner/repo[@ref] profiles the only vocabulary source; Git tags and commits now provide vocabulary versioning.
 - [change] Keep __fxy_profile__ = 1 solely as the declarative profile-language schema version.

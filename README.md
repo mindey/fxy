@@ -16,6 +16,18 @@ interactive namespace.
 The interpreter remains ordinary Python. The same vocabulary can be used from
 CPython, IPython, Jupyter, QtConsole, a script, or another Python host.
 
+## Canonical vocabularies
+
+Three small canonical profiles provide useful starting points:
+
+- mindey/calc@v1 — arbitrary-precision numerical calculation with mpmath and eday;
+- mindey/cas@v1 — symbolic mathematics with SymPy and mpmath;
+- mindey/lab@v1 — NumPy/pandas/xarray/SciPy/scikit-learn/statsmodels, plus SymPy,
+  mpmath, and eday.
+
+Use an unpinned name such as mindey/cas when following the profile's current
+main branch is intentional. Use @v1 or an exact commit for reproducible work.
+
 ## Profiles
 
 A profile is deliberately small:

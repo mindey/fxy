@@ -80,35 +80,78 @@ jobs:
       - name: Install core
         run: python -m pip install .
 
-      - name: Inspect pinned CAS profile without dependencies
+      - name: Inspect canonical pinned profiles
         run: |
           python - <<'PY'
           import fxy
 
-          source = "mindey/cas@44e0c10f778d8564fa4ff884b5a22ed651f368a5"
-          info = fxy.describe(source)
-          assert info["requirements"] == ("sympy>=1.13", "mpmath>=1.3")
-          assert "solve" in info["bindings"]
+          expected = {
+              "mindey/calc@v1": {"mp", "sqrt", "quad", "eday"},
+              "mindey/cas@v1": {"sp", "Eq", "solve", "symbols", "mp"},
+              "mindey/lab@v1": {
+                  "np", "pd", "xr", "scipy", "st", "sklearn",
+                  "sm", "smf", "sp", "mp", "eday",
+              },
+          }
+          for source, bindings in expected.items():
+              info = fxy.describe(source, refresh=True)
+              assert bindings <= set(info["bindings"]), (source, info)
           PY
 
-      - name: Install pinned CAS requirements
+      - name: Realize calculator and CAS profiles
         run: |
           python - <<'PY'
           import fxy
 
-          fxy.install(
-              "mindey/cas@44e0c10f778d8564fa4ff884b5a22ed651f368a5"
-          )
-          PY
+          fxy.install("mindey/calc@v1")
+          calc = fxy.namespace("mindey/calc@v1")
+          assert abs(float(calc["sqrt"](2)) ** 2 - 2.0) < 1e-12
+          assert calc["eday"].now() > 0
 
-      - name: Realize pinned CAS vocabulary
-        run: |
-          python - <<'PY'
-          import fxy
-
-          cas = fxy.namespace(
-              "mindey/cas@44e0c10f778d8564fa4ff884b5a22ed651f368a5"
-          )
+          fxy.install("mindey/cas@v1")
+          cas = fxy.namespace("mindey/cas@v1")
           x = cas["symbols"]("x")
           assert cas["solve"](cas["Eq"](x**2, 4), x) == [-2, 2]
+          PY
+
+  lab-profile-smoke:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install core
+        run: python -m pip install .
+
+      - name: Install canonical lab profile
+        run: python -c "import fxy; fxy.install('mindey/lab@v1')"
+
+      - name: Realize canonical lab profile
+        run: |
+          python - <<'PY'
+          import fxy
+
+          lab = fxy.namespace("mindey/lab@v1")
+          x = lab["np"].linspace(0.0, 1.0, 5)
+          assert x.tolist() == [0.0, 0.25, 0.5, 0.75, 1.0]
+          assert abs(float(lab["pd"].Series(x).mean()) - 0.5) < 1e-12
+          assert tuple(lab["xr"].DataArray(x, dims=["x"]).dims) == ("x",)
+          assert abs(float(lab["st"].norm.cdf(1.96)) - 0.9750021048517795) < 1e-12
+
+          from sklearn.linear_model import LinearRegression
+          model = LinearRegression().fit([[0], [1], [2]], [0, 2, 4])
+          assert abs(float(model.coef_[0]) - 2.0) < 1e-12
+
+          result = lab["sm"].OLS(
+              [1, 3, 5],
+              lab["sm"].add_constant([0, 1, 2]),
+          ).fit()
+          assert [round(float(v), 10) for v in result.params] == [1.0, 2.0]
+
+          u = lab["sp"].symbols("u")
+          assert lab["sp"].solve(lab["sp"].Eq(u**2, 9), u) == [-3, 3]
+          assert lab["eday"].now() > 0
           PY
