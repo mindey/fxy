@@ -16,7 +16,12 @@ This package ``fxy`` is a shorthand to do the imports packages to approximate th
 Installation
 ------------
 
--  ``pip install fxy`` to get the import shortcuts.
+-  ``pip install fxy`` installs the small default CALC environment (mpmath + eday) and the profile machinery.
+-  ``pip install 'fxy[cas]'`` adds the built-in symbolic CAS stack.
+-  ``pip install 'fxy[lab]'`` adds the numeric/data/scientific LAB stack.
+-  ``pip install 'fxy[plot]'`` adds plotting imports.
+-  ``pip install 'fxy[qt]'`` adds IPython/Jupyter QtConsole support.
+-  ``pip install 'fxy[all]'`` preserves the broad all-in-one workstation install.
 
 Use as a calculator
 -------------------
@@ -36,8 +41,8 @@ Usage as command
 The package defines the `fxy` command, if you just want Python with something, run:
 
 - ``$ fxy --calc`` starts Python with CALC imports (basic ``mpmath`` calculator)
-- ``$ fxy --cas`` (or ``-x``) starts Python with CAS (Computer Algebra System) imports (to emulate Maple, Matematica,..)
-- ``$ fxy --lab`` (or ``-y``) starts Python with LAB (Linear AlgeBra system) imports (to emulate MATLAB, R,...)
+- ``$ fxy --cas`` (or ``-x``) starts Python with CAS (Computer Algebra System) imports (to emulate Maple, Mathematica,..)
+- ``$ fxy --lab`` (or ``-y``) starts Python with LAB (linear algebra / numeric environment) imports (to emulate MATLAB, R,...)
 - ``$ fxy --plot`` (or ``-p``) for plotting imports
 
 So, for example, if you want LAB imports with plotting and in IPython, then you'd:

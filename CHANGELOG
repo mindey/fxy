@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 
 
+## [0.8.0] - 2026-11-24
+- [add] Versioned namespace profiles: calc/v1, cas/v1, lab/v1.
+- [add] GitHub-hosted declarative profiles via owner/repo[@ref].
+- [add] Cached remote profiles with explicit dependency-install approval.
+- [add] Modern pyproject.toml packaging and GitHub Actions tests.
+- [change] Keep the default install small; scientific/GUI stacks are available as extras.
+- [change] CLI and QtConsole helpers use the current Python interpreter and real Jupyter kernelspec discovery.
+- [fix] Remove the obsolete appdirs-based QtConsole kernel-state check.
+
 ## [0.5.6] - 2024-02-28
 - [change] Refactor philosophy of the package. Responsible only for two things: emulating CAS and LAB environments, leave out calc, plot.
 
