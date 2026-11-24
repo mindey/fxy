@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.0] - 2026-11-24
+- [change] Reduce fxy to a single zero-runtime-dependency profile loader with four operations: describe(), install(), namespace(), and use().
+- [change] Make GitHub owner/repo[@ref] profiles the only vocabulary source; Git tags and commits now provide vocabulary versioning.
+- [change] Keep __fxy_profile__ = 1 solely as the declarative profile-language schema version.
+- [change] Make install() itself the explicit package-installation boundary; remove approve=True and all implicit install_missing behavior.
+- [change] Execute only AST-validated import statements with Python's own import semantics instead of reimplementing import behavior.
+- [remove] Remove bundled calc, cas, lab, and plotting environments, built-in profile registry, Jupyter/QtConsole kernel machinery, calculator CLI, SciPy/scikit-learn wrappers, and legacy environment flags.
+- [remove] Remove duplicate packaging shims and historical repository artifacts that are no longer part of the package design.
+- [docs] Define fxy narrowly as transport, validation, and realization of reusable import vocabularies.
 
 ## [0.8.2] - 2026-11-24
 - [change] Make the fxy core zero-runtime-dependency; built-in and GitHub profiles now declare and install requirements through the same fxy.install() path.

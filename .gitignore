@@ -1,19 +1,15 @@
-# Virtualenv
-.env/*
-.venv/*
+# Virtual environments.
+.env/
+.venv/
 
-# Compiled python modules.
-*__pycache__*
+# Python bytecode and caches.
+__pycache__/
 *.pyc
 
-# Setuptools distribution folder.
-/dist/
-/build/
+# Build artifacts.
+dist/
+build/
+*.egg-info/
 
-# Python egg metadata, regenerated from source files by setuptools.
-/*.egg-info
-
-#
-*.ipynb_checkpoints*
-fxy/__paste__/commands.txt
-docs/raw.githubusercontent.com/
+# Notebook scratch state.
+.ipynb_checkpoints/
