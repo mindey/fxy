@@ -1,63 +1,60 @@
+import importlib.util
 import os
-import json
-import tempfile
+import subprocess
+import sys
 
 
-def interact(modules=[], mode=''):
-
-    commands = '; '.join([f'from fxy.{module} import *' for module in modules])
-
-    def is_tool(name):
-        from shutil import which
-        return which(name) is not None
-
-    python = 'python3'
-    if not is_tool(python):
-        python = 'python'
+def interact(modules=(), mode=False):
+    commands = "; ".join(f"from fxy.{module} import *" for module in modules)
 
     if mode:
-        try:
-            os.system(f'{python} -m IPython --no-banner -i -c "{commands}"')
-        except Exception as e:
-            print(e)
+        if importlib.util.find_spec("IPython") is None:
+            raise RuntimeError(
+                "IPython is not installed; install fxy[ipython] or fxy[all]."
+            )
+        command = [
+            sys.executable,
+            "-m",
+            "IPython",
+            "--no-banner",
+            "-i",
+            "-c",
+            commands,
+        ]
     else:
-        try:
-            os.system(f'{python} -i -c "{commands}"')
-        except Exception as e:
-            print(e)
-
-def run_qtconsole(name):
-    import subprocess
-    import platform
-    kernel = f'fxy_{name}'
-
-    def kernel_exists(kernel_name):
-        """Check if the kernel exists in state.json."""
-        from appdirs import user_config_dir
-
-        config_file = os.path.join(user_config_dir("fxy"), 'state.json')
-        if os.path.exists(config_file):
-            with open(config_file, 'r') as f:
-                variables = json.load(f)
-                return kernel_name in variables
-        return False
-
-    if not kernel_exists(kernel):
-        from .kernels import install_my_kernel_spec
-        install_my_kernel_spec(
-            kernel, [f'from fxy.{name} import *', 'from fxy.plot import *'])
-
-    command = ['jupyter-qtconsole', '--kernel', kernel]
+        command = [sys.executable, "-i", "-c", commands]
 
     try:
-        if platform.system() == 'Windows':
-            subprocess.run(command, shell=True)
-        else:
-            subprocess.run(command)
-    except FileNotFoundError:
-        print(f"jupyter-qtconsole or kernel '{kernel}' not found.")
-    except Exception as e:
-        print(f"An error occurred: {e}")
+        subprocess.run(command, check=False)
+    except FileNotFoundError as exc:
+        if mode:
+            raise RuntimeError(
+                "IPython is not installed; install fxy[ipython] or fxy[all]."
+            ) from exc
+        raise
+
+
+def run_qtconsole(name):
+    required = ("IPython", "ipykernel", "jupyter_client", "qtconsole")
+    missing = [module for module in required if importlib.util.find_spec(module) is None]
+    if missing:
+        raise RuntimeError(
+            "QtConsole support is incomplete "
+            f"(missing: {', '.join(missing)}); install fxy[qt] or fxy[all]."
+        )
+
+    from .kernels import kernel_exists, install_my_kernel_spec
+
+    kernel = f"fxy_{name}"
+    if not kernel_exists(kernel):
+        install_my_kernel_spec(
+            kernel,
+            [f"from fxy.{name} import *", "from fxy.plot import *"],
+        )
+
+    command = [sys.executable, "-m", "qtconsole", "--kernel", kernel]
+
+    subprocess.run(command, check=False)
 
 
 def main():
@@ -115,6 +112,8 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+from ._version import __version__
 
 # Versioned computational namespace profiles.
 from .profiles import (

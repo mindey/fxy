@@ -1,18 +1,15 @@
-import os
 import json
+import os
+import sys
 from jupyter_client.kernelspec import KernelSpecManager
 from IPython.utils.tempdir import TemporaryDirectory
 
 from IPython.paths import get_ipython_dir
-from IPython.paths import get_ipython_dir
 from IPython.core.profiledir import ProfileDir
 
-from appdirs import user_config_dir
-from setuptools.command.install import install
-from pathlib import Path
 
 
-def ensure_ipython_profile_exists(profile_name, exec_lines=[]):
+def ensure_ipython_profile_exists(profile_name, exec_lines=()):
 
     ipython_dir = get_ipython_dir()
     profile_dir = os.path.join(ipython_dir, f"profile_{profile_name}")
@@ -32,14 +29,10 @@ def ensure_ipython_profile_exists(profile_name, exec_lines=[]):
 
     return profile_dir
 
-def install_my_kernel_spec(kernel_name, exec_lines=[]):
+def install_my_kernel_spec(kernel_name, exec_lines=()):
     profile_path = ensure_ipython_profile_exists(kernel_name, exec_lines)
 
-    import os, sys, platform
-    if platform.system() == 'Windows':
-        python_executable = os.path.join(Path(sys.prefix), 'Scripts', 'python.exe')
-    else:
-        python_executable = os.path.join(Path(sys.prefix), 'bin', 'python')
+    python_executable = sys.executable
 
     kernel_json = {
      "argv": [
