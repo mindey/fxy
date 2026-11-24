@@ -7,7 +7,7 @@ import fxy
 
 class RuntimeTests(unittest.TestCase):
     def test_version(self):
-        self.assertEqual(fxy.__version__, "0.8.0")
+        self.assertEqual(fxy.__version__, "0.8.1")
 
     def test_plain_interact_uses_current_interpreter(self):
         with mock.patch("fxy.subprocess.run") as run:

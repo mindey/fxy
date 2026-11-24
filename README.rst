@@ -1,208 +1,216 @@
 fxy
 ===
-.. |isympy| replace:: ``isympy``
 
-Imports and command ``fxy`` with parameters to import libraries often used in research to emulate CAS software, or LAB software. For more info, check out the `video <https://youtu.be/xkbRmfd86u8>`_.
+Reusable computational namespaces for Python.
 
-Introduction
-------------
+``fxy`` is a small way to name, share, inspect, and reuse the imports that make a
+Python session feel like a particular mathematical or scientific language.
 
-1. People coming from ``R``, love that you can start quickly using it as a CALCulator,
-2. People coming from use of CAS tools like ``Maple``, ``Mathematica`` have ``isympy``, that is narrowly focused,
-3. People coming from computing LAB languages ``Matlab`` and ``R`` may find that ``Python`` requires quite a few imports just to do equivalent computing in Python.
+Instead of repeating setup cells across notebooks::
 
-This package ``fxy`` is a shorthand to do the imports packages to approximate these domains (CALC, CAS, and LAB) you've got a command ``fxy``, that starts Python with needed packages pre-imported: so, you can start using Python like a calculator right away.
+    import sympy as sp
+    from sympy import symbols, Eq, solve, diff, integrate
+    from mpmath import mp
 
-Installation
-------------
+a profile can make that vocabulary explicit::
 
--  ``pip install fxy`` installs the small default CALC environment (mpmath + eday) and the profile machinery.
--  ``pip install 'fxy[cas]'`` adds the built-in symbolic CAS stack.
--  ``pip install 'fxy[lab]'`` adds the numeric/data/scientific LAB stack.
--  ``pip install 'fxy[plot]'`` adds plotting imports.
--  ``pip install 'fxy[qt]'`` adds IPython/Jupyter QtConsole support.
--  ``pip install 'fxy[all]'`` preserves the broad all-in-one workstation install.
+    import fxy
+    fxy.use("mindey/cas")
 
-Use as a calculator
--------------------
-``$ fxy``
-(pass, ``-i`` for IPython)
+The interpreter stays ordinary Python.  The same profile can be used from
+CPython, IPython, Jupyter, QtConsole, scripts, or another Python host.
 
-Usage as imports
-----------------
-
-- ``from fxy.calc import *`` for quick CALC - basic ``mpmath`` calculator, and ``eday`` for time
-- ``from fxy.cas import *`` for basic CAS software ("Symbolic") emulation
-- ``from fxy.lab import *`` for LAB software ("Numeric") emulation
-- ``from fxy.plot import *`` for plotting imports.
-
-Usage as command
-----------------
-The package defines the `fxy` command, if you just want Python with something, run:
-
-- ``$ fxy --calc`` starts Python with CALC imports (basic ``mpmath`` calculator)
-- ``$ fxy --cas`` (or ``-x``) starts Python with CAS (Computer Algebra System) imports (to emulate Maple, Mathematica,..)
-- ``$ fxy --lab`` (or ``-y``) starts Python with LAB (linear algebra / numeric environment) imports (to emulate MATLAB, R,...)
-- ``$ fxy --plot`` (or ``-p``) for plotting imports
-
-So, for example, if you want LAB imports with plotting and in IPython, then you'd:
-
-- ``$ fxy -ip --lab``
-
-You can also run the equivalent of `--calc` environment, that imports ``mpmath`` and ``eday``, like this:
-
-``python -m fxy "pi**2"``
-
-The following are usage examples.
-
-CALC
-----
-
-::
-
-    >>> from fxy.calc import *
-    >>> pi
-    <pi: 3.14159~>
-    >>> mp.dps = 250
-    >>> print(pi)
-
-    >>> from fxy.plot import *
-    >>> plt.plot([1, 2, 3, 4])
-    >>> plt.ylabel('some numbers')
-    >>> plt.show()
-
-CAS
----
-
-::
-
-    >>> from fxy.cas import *
-    >>> f = x**4 - 4*x**3 + 4*x**2 - 2*x + 3
-    >>> f.subs([(x, 2), (y, 4), (z, 0)])
-    -1
-    >>> plot(f)
-    >>> plot3d(x**2-y**2)
-
-LAB
----
-
-::
-
-    >>> from fxy.lab import *
-    >>> df = pandas.DataFrame({'x': numpy.arange(10), 'y': np.random.random(10)})
-    >>> df.sum()
-    x    45.000000
-    y     4.196558
-    dtype: float64
-
-    >>> X = [[0], [1], [2], [3]]
-    >>> y = [0, 0, 1, 1]
-    >>> neigh = sklearn.neighbors.KNeighborsClassifier(n_neighbors=3)
-    >>> neigh.fit(X, y)
-    >>> print(neigh.predict([[1.1]]))
-    [0]
-    >>> print(neigh.predict_proba([[0.9]]))
-    [[0.66666667 0.33333333]]
-
-
-Suggestions
+Quick start
 -----------
 
-If you envy ``R`` users being able to start their 'calculator' with just one key, add something like the below to your ``~/.zshrc``:
+Install the small core::
 
-::
+    pip install fxy
 
-    # Basic Calculaor
-    function f() {
-        . ~/.venv/bin/activate
-        fxy "$@"
-    }
-
-    # Computer Algebra System
-    function F() {
-        . ~/.venv/bin/activate
-        fxy --qt --cas
-    }
-
-
-Aliasing ``fxy`` as ``f`` command as simplest generic, and commonly used specific as ``F`` command makes it possible to:
-
-- Use ``f`` to start Python with just ``mpmath`` for fastest scientific calculations without ``IPython``.
-- Use ``F`` to start Python with some specific other pre-configuration that you often use (e.g., ``f -ix`` emulates ``isympy``).
-
-
-.. _isympy:
-    https://linux.die.net/man/1/isympy
-
-Versioned namespace profiles
-----------------------------
-
-fxy can also treat its computational vocabularies as named, inspectable
-contracts rather than only as preconfigured environments. Profile versions are
-independent of package versions, so a notebook can record the mathematical
-dialect it expects::
+Then use a built-in profile::
 
     import fxy
 
     fxy.available()
     # ('calc/v1', 'cas/v1', 'lab/v1')
 
-    fxy.use('cas/v1')
-    f = x**2 + y**2
+    fxy.use("cas/v1")
 
-Unversioned names are convenience aliases for the current contract::
+Unversioned built-in names are aliases for their current profile::
 
-    fxy.use('cas')          # currently cas/v1
+    fxy.use("cas")          # currently cas/v1
 
-Profiles can be inspected without injecting anything into the current namespace::
+A profile can also be published independently on GitHub::
 
-    fxy.names('cas/v1')
-    fxy.describe('cas/v1')
-    fxy.diff('cas/v1', 'lab/v1')
+    fxy.use("mindey/cas")
+    fxy.use("mindey/cas@main")
+    fxy.use("mindey/cas@44e0c10f778d8564fa4ff884b5a22ed651f368a5")
 
-The initial v1 profiles intentionally mirror the existing star-import behaviour.
-Because the legacy modules conditionally import optional dependencies, the names
-realized by a v1 profile still depend on the current Python environment. The v1
-identifier therefore stabilizes the selection semantics and makes the realized
-namespace inspectable; a future cas/v2 or lab/v2 can become a curated, explicitly
-dependency-declared contract without silently changing old notebooks.
+The last form pins an immutable Git commit and is preferable when a notebook must
+be reproducible.
 
-GitHub-hosted profiles
-----------------------
+What a profile is
+-----------------
 
-A profile can also live in a public GitHub repository.  The source syntax follows
-the familiar ``owner/repo`` convention, with an optional branch, tag or commit::
+A profile is a computational vocabulary: a set of imports plus optional
+dependency declarations.
 
-    fxy.use('mindey/cas')
-    fxy.use('mindey/cas@main')
-    fxy.use('mindey/cas@8f1810c')
-
-The repository contains ``fxy.py`` at its root.  The file is declarative: fxy
-parses it and permits imports plus literal profile metadata, but does not execute
-arbitrary Python code::
+Built-in profiles are registered by ``fxy`` itself.  GitHub-hosted profiles use
+a declarative ``fxy.py`` at the repository root, for example::
 
     __fxy_profile__ = 1
-    __requires__ = ['sympy>=1.13', 'mpmath>=1.3']
+    __requires__ = [
+        "sympy>=1.13",
+        "mpmath>=1.3",
+    ]
 
     import sympy as sp
     from sympy import symbols, Eq, solve, diff, integrate
     from mpmath import mp
 
-Remote profiles are cached under the user's cache directory.  Unpinned
-``owner/repo`` sources use GitHub's ``HEAD`` ref; pin a tag or commit when
-reproducibility matters.  Cached sources are reused by default; pass
-``refresh=True`` to ``use()``, ``namespace()`` or ``describe()`` to fetch the
-selected ref again.
+The profile file is parsed, not executed.  Schema version 1 permits import
+statements and literal ``fxy`` metadata; arbitrary statements such as function
+calls are rejected.  Imported Python packages retain their normal import-time
+behavior.
 
-Dependency installation is never implicit.  A profile may declare requirements,
-but installing them requires an explicit approval::
+This keeps two decisions separate:
 
-    fxy.install('mindey/cas', approve=True)
+1. **Which names should exist in this computational vocabulary?**
+2. **Which packages may be installed into this Python environment?**
 
-For interactive convenience, ``fxy.use(..., install_missing=True)`` is the
-explicit auto-approval form.  Without it, a missing import raises an error that
-shows the profile's declared requirements.
+Dependency installation
+-----------------------
 
-This GitHub source form is intentionally small enough to support a future
-registry: a registry entry only needs to map a short name to an ``owner/repo``
-(or pinned ``owner/repo@ref``) source.
+Installing a profile's declared dependencies is always explicit::
+
+    fxy.install("mindey/cas", approve=True)
+
+For an interactive session, this is the equivalent one-step form::
+
+    fxy.use("mindey/cas", install_missing=True)
+
+Without approval, a missing dependency raises an error showing what the profile
+declared rather than silently modifying the environment.
+
+Profiles are cached under the user's cache directory.  Pass ``refresh=True`` to
+``use()``, ``namespace()``, or ``describe()`` when you intentionally want to
+refetch an unpinned branch or tag.
+
+Inspecting profiles
+-------------------
+
+Profiles are inspectable without changing the current namespace::
+
+    fxy.names("cas/v1")
+    fxy.describe("cas/v1")
+    fxy.diff("cas/v1", "lab/v1")
+
+To materialize a profile as a dictionary instead of injecting it::
+
+    ns = fxy.namespace("mindey/cas")
+    ns["solve"](...)
+
+Built-in profiles
+-----------------
+
+``calc/v1``
+    The historical lightweight calculator vocabulary, centered on ``mpmath`` and
+    ``eday``.
+
+``cas/v1``
+    The historical symbolic vocabulary, centered on SymPy and ``mpmath``.
+
+``lab/v1``
+    The historical numeric/data/scientific vocabulary.
+
+The ``v1`` profiles intentionally preserve the legacy import-selection semantics.
+Because the historical modules conditionally import optional dependencies, the
+exact names realized by a ``v1`` profile can still depend on what is installed.
+
+Future profile versions can be curated and dependency-declared without silently
+changing notebooks that explicitly requested ``v1``.
+
+Installing built-in capabilities
+--------------------------------
+
+The default installation stays small::
+
+    pip install fxy
+
+Optional built-in stacks are available as extras::
+
+    pip install 'fxy[cas]'
+    pip install 'fxy[lab]'
+    pip install 'fxy[plot]'
+    pip install 'fxy[ipython]'
+    pip install 'fxy[qt]'
+    pip install 'fxy[all]'
+
+A GitHub-hosted profile does not need its own PyPI package merely to define a
+vocabulary.  Its repository can declare the packages it needs.
+
+Publishing a profile
+--------------------
+
+For a simple public profile:
+
+1. Create a public GitHub repository, for example ``alice/cas``.
+2. Put a schema-1 ``fxy.py`` at its root.
+3. Use it as ``fxy.use("alice/cas")``.
+4. Pin a tag or commit when reproducibility matters.
+
+This deliberately follows the familiar ``owner/repo[@ref]`` convention used by
+many plugin ecosystems.  A future registry can therefore remain a thin discovery
+layer mapping short names to Git sources rather than becoming a second package
+repository.
+
+Why profiles instead of predefined environments?
+-------------------------------------------------
+
+A predefined Jupyter kernel, shell environment, or QtConsole profile couples a
+vocabulary to one execution surface.
+
+``fxy`` instead makes the vocabulary reusable.  A notebook and a terminal REPL
+can share the same profile while keeping their own interpreter, kernel,
+environment manager, and user interface.
+
+That separation is the main design direction of ``fxy`` 0.8+.
+
+Legacy compatibility
+--------------------
+
+The older interfaces remain available for compatibility::
+
+    from fxy.calc import *
+    from fxy.cas import *
+    from fxy.lab import *
+    from fxy.plot import *
+
+and the historical ``fxy`` launcher options (including the CAS/LAB and QtConsole
+presets) continue to work.
+
+For new notebooks and reusable code, these environment-style star imports and
+launcher presets are **deprecated as the primary interface**.  Prefer
+``fxy.use(...)`` or ``fxy.namespace(...)`` so the vocabulary is named,
+inspectable, shareable, and optionally version-pinned.
+
+There is no removal date for the legacy interfaces in the 0.x series; they are
+kept as compatibility surfaces and may receive maintenance fixes.
+
+Command-line calculator
+-----------------------
+
+The small calculator command remains useful independently of the profile API::
+
+    fxy
+    python -m fxy "pi**2"
+
+Use ``fxy -i`` if the IPython extra is installed and you want the interactive
+IPython frontend.
+
+Links
+-----
+
+- Source: https://github.com/mindey/fxy
+- PyPI: https://pypi.org/project/fxy/
+- Example external profile: https://github.com/mindey/cas

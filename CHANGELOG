@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file.
 
 
+## [0.8.1] - 2026-11-24
+- [docs] Reframe fxy around reusable computational vocabularies and profiles.
+- [docs] Make GitHub-hosted profiles, dependency approval, inspection, and reproducibility the primary workflow.
+- [deprecate] Treat legacy star-import environments and launcher presets as compatibility interfaces for new work.
+
 ## [0.8.0] - 2026-11-24
 - [add] Versioned namespace profiles: calc/v1, cas/v1, lab/v1.
 - [add] GitHub-hosted declarative profiles via owner/repo[@ref].
