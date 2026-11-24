@@ -4,7 +4,7 @@ import subprocess
 import sys
 
 
-_LEGACY_EXTRA_MODULES = {
+_LEGACY_PROFILE_MODULES = {
     "calc": ("mpmath", "eday"),
     "cas": ("sympy", "mpmath", "eday"),
     "lab": ("mpmath", "eday", "sympy", "numpy", "pandas", "xarray", "scipy", "sklearn", "statsmodels"),
@@ -12,14 +12,21 @@ _LEGACY_EXTRA_MODULES = {
 }
 
 
-def _require_legacy_extra(name):
-    modules = _LEGACY_EXTRA_MODULES[name]
+def _require_legacy_profile(name):
+    modules = _LEGACY_PROFILE_MODULES[name]
     missing = [module for module in modules if importlib.util.find_spec(module) is None]
-    if missing:
-        raise RuntimeError(
-            f"Legacy {name} environment is incomplete (missing: {', '.join(missing)}); "
-            f"install fxy[{name}] or use a dependency-declared profile."
-        )
+    if not missing:
+        return
+
+    if name in {"calc", "cas", "lab"}:
+        hint = f"run fxy.install({name!r}, approve=True)"
+    else:
+        hint = "install matplotlib and seaborn"
+
+    raise RuntimeError(
+        f"Legacy {name} environment is incomplete (missing: {', '.join(missing)}); "
+        f"{hint}."
+    )
 
 
 
@@ -29,7 +36,7 @@ def interact(modules=(), mode=False):
     if mode:
         if importlib.util.find_spec("IPython") is None:
             raise RuntimeError(
-                "IPython is not installed; install fxy[ipython] or fxy[all]."
+                "IPython is not installed; install the IPython package."
             )
         command = [
             sys.executable,
@@ -48,21 +55,21 @@ def interact(modules=(), mode=False):
     except FileNotFoundError as exc:
         if mode:
             raise RuntimeError(
-                "IPython is not installed; install fxy[ipython] or fxy[all]."
+                "IPython is not installed; install the IPython package."
             ) from exc
         raise
 
 
 def run_qtconsole(name):
-    _require_legacy_extra(name)
-    _require_legacy_extra("plot")
+    _require_legacy_profile(name)
+    _require_legacy_profile("plot")
 
     required = ("IPython", "ipykernel", "jupyter_client", "qtconsole")
     missing = [module for module in required if importlib.util.find_spec(module) is None]
     if missing:
         raise RuntimeError(
             "QtConsole support is incomplete "
-            f"(missing: {', '.join(missing)}); install fxy[qt] or fxy[all]."
+            f"(missing: {', '.join(missing)}); install the missing frontend packages."
         )
 
     from .kernels import kernel_exists, install_my_kernel_spec
@@ -130,9 +137,9 @@ def main():
         module = 'lab'
 
     try:
-        _require_legacy_extra(module)
+        _require_legacy_profile(module)
         if plot:
-            _require_legacy_extra("plot")
+            _require_legacy_profile("plot")
     except RuntimeError as exc:
         parser.error(str(exc))
 
@@ -152,6 +159,7 @@ from .profiles import (
     diff,
     names,
     namespace as _local_namespace,
+    install as _local_install,
     resolve,
     use as _local_use,
 )
@@ -207,6 +215,6 @@ def describe(profile, **kwargs):
 
 
 def install(profile, **kwargs):
-    if not _is_remote_profile(profile):
-        raise ValueError("dependency installation applies to remote profiles")
-    return remote.install(profile, **kwargs)
+    if _is_remote_profile(profile):
+        return remote.install(profile, **kwargs)
+    return _local_install(profile, **kwargs)

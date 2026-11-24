@@ -11,7 +11,7 @@ def main():
     if missing:
         print(
             "Calculator support is not installed "
-            f"(missing: {', '.join(missing)}); install fxy[calc].",
+            f"(missing: {', '.join(missing)}); run fxy.install('calc', approve=True) in Python.",
             file=sys.stderr,
         )
         raise SystemExit(2)

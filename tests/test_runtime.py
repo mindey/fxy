@@ -28,10 +28,10 @@ class RuntimeTests(unittest.TestCase):
             return original(name)
 
         with mock.patch("fxy.importlib.util.find_spec", side_effect=find_spec):
-            with self.assertRaisesRegex(RuntimeError, r"fxy\[ipython\]"):
+            with self.assertRaisesRegex(RuntimeError, r"IPython package"):
                 fxy.interact(("calc",), mode=True)
 
-    def test_module_expression_requires_calc_extra(self):
+    def test_module_expression_requires_calc_profile(self):
         import contextlib
         import io
         import runpy
@@ -52,7 +52,7 @@ class RuntimeTests(unittest.TestCase):
                         runpy.run_module("fxy", run_name="__main__")
 
         self.assertEqual(caught.exception.code, 2)
-        self.assertIn("install fxy[calc]", error.getvalue())
+        self.assertIn("fxy.install('calc', approve=True)", error.getvalue())
 
 
 if __name__ == "__main__":

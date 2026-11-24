@@ -8,10 +8,10 @@ import hashlib
 import os
 from pathlib import Path
 import re
-import subprocess
-import sys
 from typing import Any, Dict, MutableMapping, Optional, Tuple
 from urllib.request import Request, urlopen
+
+from .dependencies import InstallApprovalRequired, install_requirements
 
 
 _SOURCE_RE = re.compile(
@@ -25,10 +25,6 @@ class RemoteProfileError(RuntimeError):
 
 
 class InvalidRemoteProfile(RemoteProfileError):
-    pass
-
-
-class InstallApprovalRequired(RemoteProfileError):
     pass
 
 
@@ -191,17 +187,11 @@ def install(
     cache_dir: Optional[Path] = None,
 ) -> Tuple[str, ...]:
     profile = fetch(value, refresh=refresh, cache_dir=cache_dir)
-    if not profile.requirements:
-        return ()
-    if not approve:
-        raise InstallApprovalRequired(
-            "explicit approval required for: " + ", ".join(profile.requirements)
-        )
-    subprocess.run(
-        [sys.executable, "-m", "pip", "install", *profile.requirements],
-        check=True,
+    return install_requirements(
+        profile.requirements,
+        approve=approve,
+        source=profile.source.spec,
     )
-    return profile.requirements
 
 
 def _execute_import(node: ast.stmt, target: MutableMapping[str, Any]) -> None:

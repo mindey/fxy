@@ -1,4 +1,5 @@
 import unittest
+from unittest import mock
 
 import fxy
 from fxy.profiles import Profile
@@ -40,6 +41,26 @@ class ProfileTests(unittest.TestCase):
 
         self.assertEqual(set(forward["added"]), set(reverse["removed"]))
         self.assertEqual(set(forward["removed"]), set(reverse["added"]))
+
+    def test_builtin_profile_declares_requirements(self):
+        info = fxy.describe("cas")
+        self.assertEqual(
+            info["requirements"],
+            ("sympy>=1.13", "mpmath>=1.3", "eday"),
+        )
+
+    def test_builtin_install_requires_approval(self):
+        with self.assertRaises(fxy.remote.InstallApprovalRequired):
+            fxy.install("calc")
+
+    def test_builtin_install_uses_shared_installer(self):
+        with mock.patch("fxy.dependencies.subprocess.run") as run:
+            installed = fxy.install("calc", approve=True)
+
+        self.assertEqual(installed, ("mpmath>=1.3", "eday"))
+        command = run.call_args.args[0]
+        self.assertEqual(command[1:4], ["-m", "pip", "install"])
+        self.assertEqual(command[4:], ["mpmath>=1.3", "eday"])
 
     def test_profile_metadata_is_inspectable(self):
         info = fxy.describe("cas")
