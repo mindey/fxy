@@ -128,3 +128,36 @@ Aliasing ``fxy`` as ``f`` command as simplest generic, and commonly used specifi
 
 .. _isympy:
     https://linux.die.net/man/1/isympy
+
+Versioned namespace profiles
+----------------------------
+
+fxy can also treat its computational vocabularies as named, inspectable
+contracts rather than only as preconfigured environments. Profile versions are
+independent of package versions, so a notebook can record the mathematical
+dialect it expects::
+
+    import fxy
+
+    fxy.available()
+    # ('calc/v1', 'cas/v1', 'lab/v1')
+
+    fxy.use('cas/v1')
+    f = x**2 + y**2
+
+Unversioned names are convenience aliases for the current contract::
+
+    fxy.use('cas')          # currently cas/v1
+
+Profiles can be inspected without injecting anything into the current namespace::
+
+    fxy.names('cas/v1')
+    fxy.describe('cas/v1')
+    fxy.diff('cas/v1', 'lab/v1')
+
+The initial v1 profiles intentionally mirror the existing star-import behaviour.
+Because the legacy modules conditionally import optional dependencies, the names
+realized by a v1 profile still depend on the current Python environment. The v1
+identifier therefore stabilizes the selection semantics and makes the realized
+namespace inspectable; a future cas/v2 or lab/v2 can become a curated, explicitly
+dependency-declared contract without silently changing old notebooks.
